@@ -20,13 +20,24 @@ ext {
 }
 
 dependencies {
-    implementation project(':core-module')
-    implementation 'org.springframework.boot:spring-boot-starter-web'	// Web 의존성
-
     // eureka
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter'
+
+    // ApiGateway
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // jwt 토큰을 구현할때  필요한 의존성들
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 }
 
 dependencyManagement {

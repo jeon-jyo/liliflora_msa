@@ -55,7 +55,7 @@ public class User {
     @Column(nullable = false)
     private char status;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+//    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 //    private Wishlist wishlist;
 
 
