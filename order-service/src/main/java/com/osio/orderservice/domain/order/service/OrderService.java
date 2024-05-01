@@ -84,7 +84,7 @@ public class OrderService {
 
     // 주문 상태 추가
     @Transactional
-    private OrderStatus createOrderStatus() {
+    public OrderStatus createOrderStatus() {
         OrderStatus orderStatus = OrderStatus.builder()
                 .status(OrderStatusEnum.ORDERED)
                 .build();
