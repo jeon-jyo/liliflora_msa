@@ -24,6 +24,7 @@ public class WishItemResponseDto {
                     .wishItemId(wishItem.getWishItemId())
                     .wishlistId(wishItem.getWishlist().getWishlistId())
 //                    .productId(wishItem.getProduct().getProductId())
+                    .productId(wishItem.getProductId())
                     .quantity(wishItem.getQuantity())
                     .build();
         }

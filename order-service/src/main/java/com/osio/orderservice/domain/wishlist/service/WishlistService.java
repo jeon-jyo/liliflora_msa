@@ -3,15 +3,18 @@ package com.osio.orderservice.domain.wishlist.service;
 import com.osio.orderservice.domain.wishlist.dto.WishItemRequestDto;
 import com.osio.orderservice.domain.wishlist.dto.WishItemResponseDto;
 import com.osio.orderservice.domain.wishlist.entity.WishItem;
+import com.osio.orderservice.domain.wishlist.entity.Wishlist;
 import com.osio.orderservice.domain.wishlist.repository.WishItemRepository;
 import com.osio.orderservice.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.acls.model.NotFoundException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -33,36 +36,37 @@ public class WishlistService {
 //
 //        Wishlist wishlist = wishlistRepository.findByUser(user)
 //                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
-//
+
+        Wishlist wishlist = wishlistRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
+
 //        Product product = productRepository.findById(addWishlistDto.getProductId())
 //                .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId()));
 
-//        WishItem wishItem = confirmWishItem(addWishlistDto, wishlist, product);
-//        return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
-        return null;
+        WishItem wishItem = confirmWishItem(addWishlistDto, wishlist, addWishlistDto.getProductId());
+        return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
     }
 
     // 장바구니 상품 확인 - 추가 및 수정
-//    @Transactional
-//    private WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, Product product) {
-//        Optional<WishItem> currentWishItem =
-//                wishItemRepository.findWishItemByWishlistAndProductAndDeletedFalse(wishlist, product);
-//
-//        WishItem wishItem;
-//        if (currentWishItem.isPresent()) {  // 장바구니에 해당 상품이 존재한다면 수량 업데이트
-//            wishItem = currentWishItem.get();   // getOne()은 엔티티를 가져오는 동안 지연 로딩을 허용하기 때문에 사용자 식별자로 엔티티를 가져올 때 효율적
-//            wishItem.increaseQuantity(addWishlistDto.getQuantity());
-//        } else {    // 존재하지 않는다면 장바구니 추가
-//            wishItem = WishItem.builder()
-//                    .wishlist(wishlist)
-//                    .product(product)
-//                    .quantity(addWishlistDto.getQuantity())
-//                    .build();
-//        }
-//        wishItemRepository.save(wishItem);
-//        return wishItem;
-//        return null;
-//    }
+    @Transactional
+    public WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, long productId) {
+        Optional<WishItem> currentWishItem =
+                wishItemRepository.findWishItemByWishlistAndProductIdAndDeletedFalse(wishlist, productId);
+
+        WishItem wishItem;
+        if (currentWishItem.isPresent()) {  // 장바구니에 해당 상품이 존재한다면 수량 업데이트
+            wishItem = currentWishItem.get();   // getOne()은 엔티티를 가져오는 동안 지연 로딩을 허용하기 때문에 사용자 식별자로 엔티티를 가져올 때 효율적
+            wishItem.increaseQuantity(addWishlistDto.getQuantity());
+        } else {    // 존재하지 않는다면 장바구니 추가
+            wishItem = WishItem.builder()
+                    .wishlist(wishlist)
+                    .productId(productId)
+                    .quantity(addWishlistDto.getQuantity())
+                    .build();
+        }
+        wishItemRepository.save(wishItem);
+        return wishItem;
+    }
 
     // 장바구니 조회
     @Transactional
@@ -110,4 +114,19 @@ public class WishlistService {
 
         wishItem.updateDeleted();
     }
+
+    // feign
+
+    // 장바구니 생성
+    @Transactional
+    public void createWishlist(long userId) {
+        log.info("WishlistService.createWishlist()");
+
+        // Wishlist 생성 및 연결
+            Wishlist wishlist = Wishlist.builder()
+                    .userId(userId)
+                    .build();
+            wishlistRepository.save(wishlist);
+    }
+
 }

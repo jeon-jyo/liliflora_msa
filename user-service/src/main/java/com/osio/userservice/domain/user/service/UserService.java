@@ -1,5 +1,6 @@
 package com.osio.userservice.domain.user.service;
 
+import com.osio.userservice.domain.client.wishlist.WishlistClient;
 import com.osio.userservice.domain.user.dto.UserRequestDto;
 import com.osio.userservice.domain.user.dto.UserResponseDto;
 import com.osio.userservice.domain.user.entity.User;
@@ -31,6 +32,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 //    private final WishlistRepository wishlistRepository;
+    private final WishlistClient wishlistClient;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
@@ -78,6 +80,7 @@ public class UserService {
 //                    .user(user)
 //                    .build();
 //            wishlistRepository.save(wishlist);
+            wishlistClient.createWishlist(user.getUserId());
             return "Success";
         } catch (DataIntegrityViolationException e) {   // 중복된 이메일 주소로 회원가입 시도한 경우 예외 처리
             return "Duplicate";

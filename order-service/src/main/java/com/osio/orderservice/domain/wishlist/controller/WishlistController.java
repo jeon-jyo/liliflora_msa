@@ -5,8 +5,6 @@ import com.osio.orderservice.domain.wishlist.dto.WishItemResponseDto;
 import com.osio.orderservice.domain.wishlist.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,35 +20,36 @@ public class WishlistController {
     // 장바구니 추가
     @PostMapping("/add")
     public WishItemResponseDto.WishItemCheckDto addWishlist(@RequestBody WishItemRequestDto.AddWishItemDto addWishlistDto,
-                                                            @AuthenticationPrincipal UserDetails userDetails) {
+                                                            @RequestHeader(value = "userId") String userId) {
         log.info("WishlistController.addWishlist()");
 
-        return wishlistService.addWishlist(addWishlistDto, Long.valueOf(userDetails.getUsername()));
+        return wishlistService.addWishlist(addWishlistDto, Long.valueOf(userId));
     }
 
     // 장바구니 조회
     @GetMapping("/my")
-    public List<WishItemResponseDto.WishItemCheckDto> myWishlist(@AuthenticationPrincipal UserDetails userDetails) {
+    public List<WishItemResponseDto.WishItemCheckDto> myWishlist(@RequestHeader(value = "userId") String userId) {
         log.info("WishlistController.myWishlist()");
 
-        return wishlistService.myWishlist(Long.valueOf(userDetails.getUsername()));
+        return wishlistService.myWishlist(Long.valueOf(userId));
     }
 
     // 장바구니 수량 변경
     @PutMapping("/update")
     public WishItemResponseDto.WishItemCheckDto updateWishlist(@RequestBody WishItemRequestDto.UpdateWishItemDto updateWishItemDto,
-                                                               @AuthenticationPrincipal UserDetails userDetails) {
+                                                               @RequestHeader(value = "userId") String userId) {
         log.info("WishlistController.updateWishlist()");
 
-        return wishlistService.updateWishlist(updateWishItemDto, Long.valueOf(userDetails.getUsername()));
+        return wishlistService.updateWishlist(updateWishItemDto, Long.valueOf(userId));
     }
 
     // 장바구니 삭제
     @PutMapping("/delete")
     public boolean deleteWishlist(@RequestBody WishItemRequestDto.UpdateWishItemDto updateWishItemDto,
-                                                               @AuthenticationPrincipal UserDetails userDetails) {
+                                  @RequestHeader(value = "userId") String userId) {
         log.info("WishlistController.deleteWishlist()");
 
+        wishlistService.deleteWishlist(updateWishItemDto, Long.valueOf(userId));
         return true;
     }
 

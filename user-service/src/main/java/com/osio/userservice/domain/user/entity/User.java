@@ -57,7 +57,7 @@ public class User {
 
 //    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 //    private Wishlist wishlist;
-
+    private Long wishlistId;
 
     // Entity 가 DB에 Insert 되기 전에 호출됨
     @PrePersist

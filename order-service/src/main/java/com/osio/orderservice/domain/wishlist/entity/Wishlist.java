@@ -27,6 +27,7 @@ public class Wishlist {
 //    @OneToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "user_id", nullable = false)
 //    private User user;
+    private Long userId;
 
     @OneToMany(mappedBy = "wishlist", fetch = FetchType.LAZY)
     private List<WishItem> wishItems = new ArrayList<>();

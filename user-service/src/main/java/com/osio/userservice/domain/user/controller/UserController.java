@@ -78,42 +78,39 @@ public class UserController {
     헤더로 토큰을 넘겨주면 필터가 먼저 토큰을 확인함 (바디에서는 사용자 정보 넘겨 줄 필요 x)
      */
     // 마이페이지 - 내 정보 조회
+    // @AuthenticationPrincipal UserDetails userDetails
     @GetMapping("/myPage")
-    public UserResponseDto.MyPageDto myPage(@AuthenticationPrincipal UserDetails userDetails) {
+    public UserResponseDto.MyPageDto myPage(@RequestHeader(value = "userId") String userId) {
         log.info("UserController.myPage()");
 
-        if (userDetails != null) {
-            return userService.myPage(Long.valueOf(userDetails.getUsername()));
-        } else {
-            throw new IllegalStateException("UserDetailsImpl is null");
-        }
+        return userService.myPage(Long.valueOf(userId));
     }
 
     // 비밀번호 업데이트
     @PutMapping("/password")
     public boolean updatePassword(@RequestBody @Valid UserRequestDto.ChangePasswordDto changePasswordDto,
-                                  @AuthenticationPrincipal UserDetails userDetails) {
+                                  @RequestHeader(value = "userId") String userId) {
         log.info("UserController.updatePassword()");
 
-        userService.updatePassword(changePasswordDto, Long.valueOf(userDetails.getUsername()));
+        userService.updatePassword(changePasswordDto, Long.valueOf(userId));
         return true;
     }
 
     // 폰 번호 업데이트
     @PutMapping("/phone")
-    public boolean updatePhone(@RequestBody UserRequestDto.ChangePhoneDto changePhoneDto, @AuthenticationPrincipal UserDetails userDetails) {
+    public boolean updatePhone(@RequestBody UserRequestDto.ChangePhoneDto changePhoneDto, @RequestHeader(value = "userId") String userId) {
         log.info("UserController.updatePhone()");
 
-        userService.updatePhone(changePhoneDto, Long.valueOf(userDetails.getUsername()));
+        userService.updatePhone(changePhoneDto, Long.valueOf(userId));
         return true;
     }
 
     // 주소 업데이트
     @PutMapping("/address")
-    public boolean updateAddress(@RequestBody UserRequestDto.ChangeAddressDto changeAddressDto, @AuthenticationPrincipal UserDetails userDetails) {
+    public boolean updateAddress(@RequestBody UserRequestDto.ChangeAddressDto changeAddressDto, @RequestHeader(value = "userId") String userId) {
         log.info("UserController.updateAddress()");
 
-        userService.updateAddress(changeAddressDto, Long.valueOf(userDetails.getUsername()));
+        userService.updateAddress(changeAddressDto, Long.valueOf(userId));
         return true;
     }
 
