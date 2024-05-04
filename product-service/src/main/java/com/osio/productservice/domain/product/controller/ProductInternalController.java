@@ -24,7 +24,7 @@ public class ProductInternalController {
     }
 
     // 상품 재고 감소
-    @GetMapping("/decrease")
+    @PostMapping("/decrease")
     void decreaseQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto) {
         log.info("ProductInternalController.decreaseQuantity()");
 
@@ -32,7 +32,7 @@ public class ProductInternalController {
     }
 
     // 상품 재고 복구
-    @GetMapping("/increase")
+    @PostMapping("/increase")
     void increaseQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto) {
         log.info("ProductInternalController.increaseQuantity()");
 

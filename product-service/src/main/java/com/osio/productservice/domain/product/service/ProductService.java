@@ -48,14 +48,19 @@ public class ProductService {
     }
 
     // 상품 재고 감소
+    @Transactional
     public void decreaseQuantity(ProductReqDto.ProductQuantityDto productQuantityDto) {
         Product product = productRepository.findById(productQuantityDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        log.info("productQuantityDto " + productQuantityDto.getProductId());
+        log.info("getProductId " + product.getProductId());
 
         product.decreaseQuantity(productQuantityDto.getQuantity());
     }
 
     // 상품 재고 복구
+    @Transactional
     public void increaseQuantity(ProductReqDto.ProductQuantityDto productQuantityDto) {
         Product product = productRepository.findById(productQuantityDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));

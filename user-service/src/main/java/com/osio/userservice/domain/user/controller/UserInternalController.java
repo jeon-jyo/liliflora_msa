@@ -15,7 +15,7 @@ public class UserInternalController {
     private final UserService userService;
 
     // 주문 유저 정보
-    @GetMapping("/api/internal/user/myPage/{userId}")
+    @GetMapping("/myPage/{userId}")
     UserResponseDto.MyPageDto myPage(@PathVariable("userId") long userId) {
         log.info("UserInternalController.myPage()");
 
