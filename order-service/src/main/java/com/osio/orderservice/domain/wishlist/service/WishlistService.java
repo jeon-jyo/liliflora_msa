@@ -8,8 +8,7 @@ import com.osio.orderservice.domain.wishlist.repository.WishItemRepository;
 import com.osio.orderservice.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.acls.model.NotFoundException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+//import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,7 @@ public class WishlistService {
 //                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
 
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("Wishlist not found " + userId));
 
 //        Product product = productRepository.findById(addWishlistDto.getProductId())
 //                .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId()));
@@ -49,7 +48,7 @@ public class WishlistService {
 
     // 장바구니 상품 확인 - 추가 및 수정
     @Transactional
-    public WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, long productId) {
+    protected WishItem confirmWishItem(WishItemRequestDto.AddWishItemDto addWishlistDto, Wishlist wishlist, long productId) {
         Optional<WishItem> currentWishItem =
                 wishItemRepository.findWishItemByWishlistAndProductIdAndDeletedFalse(wishlist, productId);
 
@@ -79,16 +78,18 @@ public class WishlistService {
 //        Wishlist wishlist = wishlistRepository.findByUser(user)
 //                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
 
+        Wishlist wishlist = wishlistRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Wishlist not found " + userId));
+
         // List<WishItem> 가 자동으로 불러와짐
-//        List<WishItem> wishItems = wishlist.getWishItems();
-//
-//        List<WishItem> currentWishItems = wishItems.stream()    // 리스트 -> 스트림
-//                .filter(wishItem -> !wishItem.isDeleted())  // wishItem 객체에 대해 삭제되지 않은 경우만 필터
-//                .toList();  // 리스트로 수집
+        List<WishItem> wishItems = wishlist.getWishItems();
+
+        List<WishItem> currentWishItems = wishItems.stream()    // 리스트 -> 스트림
+                .filter(wishItem -> !wishItem.isDeleted())  // wishItem 객체에 대해 삭제되지 않은 경우만 필터
+                .toList();  // 리스트로 수집
 
         // map() : 각 WishItem 객체를 새로운 요소(fromEntity)로 매핑
-//        return currentWishItems.stream().map(WishItemResponseDto.WishItemCheckDto::fromEntity).toList();
-        return null;
+        return currentWishItems.stream().map(WishItemResponseDto.WishItemCheckDto::fromEntity).toList();
     }
 
     // 장바구니 수량 변경
@@ -97,7 +98,7 @@ public class WishlistService {
         log.info("WishlistService.updateWishlist()");
 
         WishItem wishItem = wishItemRepository.findById(updateWishItemDto.getWishItemId())
-                .orElseThrow(() -> new NotFoundException("WishItem not found " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("WishItem not found " + userId));
 
         wishItem.updateQuantity(updateWishItemDto.getQuantity());
         wishItemRepository.save(wishItem);
@@ -110,7 +111,7 @@ public class WishlistService {
         log.info("WishlistService.deleteWishlist()");
 
         WishItem wishItem = wishItemRepository.findById(updateWishItemDto.getWishItemId())
-                .orElseThrow(() -> new NotFoundException("WishItem not found " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("WishItem not found " + userId));
 
         wishItem.updateDeleted();
     }

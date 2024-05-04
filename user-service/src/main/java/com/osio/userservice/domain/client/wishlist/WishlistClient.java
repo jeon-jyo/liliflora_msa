@@ -4,7 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-@FeignClient(name = "wishlist-service")
+@FeignClient(name = "order-service")
 public interface WishlistClient {
 
     // 장바구니 생성

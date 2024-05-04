@@ -19,6 +19,8 @@ public class WishlistInternalController {
     // 장바구니 생성
     @PostMapping("/create/{userId}")
     public void createWishlist(@PathVariable("userId") long userId) {
+        log.info("WishlistInternalController.createWishlist()");
+
         wishlistService.createWishlist(userId);
     }
 

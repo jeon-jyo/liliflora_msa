@@ -1,5 +1,6 @@
 package com.osio.orderservice.domain.order.dto;
 
+import com.osio.orderservice.domain.client.product.dto.ProductResDto;
 import com.osio.orderservice.domain.order.entity.OrderItem;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,12 +23,21 @@ public class OrderItemResponseDto {
         public static OrderItemCheckDto fromEntity(OrderItem orderItem) {
             return OrderItemCheckDto.builder()
                     .orderItemId(orderItem.getOrderItemId())
-//                    .productId(orderItem.getProduct().getProductId())
+                    .productId(orderItem.getProductId())
 //                    .name(orderItem.getProduct().getName())
                     .quantity(orderItem.getQuantity())
                     .build();
         }
-    }
 
+        public static OrderItemCheckDto fromEntityAndDto(OrderItem orderItem, ProductResDto.ProductDetailDto productDetailDto) {
+            return OrderItemCheckDto.builder()
+                    .orderItemId(orderItem.getOrderItemId())
+                    .productId(orderItem.getProductId())
+//                    .name(orderItem.getProduct().getName())
+                    .name(productDetailDto.getName())
+                    .quantity(orderItem.getQuantity())
+                    .build();
+        }
+    }
 
 }

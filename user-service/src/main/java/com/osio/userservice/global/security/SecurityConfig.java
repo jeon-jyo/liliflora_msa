@@ -1,6 +1,5 @@
 package com.osio.userservice.global.security;
 
-import com.osio.userservice.global.jwt.JwtAuthenticationFilter;
 import com.osio.userservice.global.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -32,14 +30,9 @@ public class SecurityConfig {
                 // 요청에 대한 인가 규칙 설정
                 .authorizeHttpRequests(http->{
                     http
-                            .requestMatchers("/user/mailSend").permitAll()
-                            .requestMatchers("/user/mailAuthCheck").permitAll()
-                            .requestMatchers("/user/signup").permitAll()
-                            .requestMatchers("/user/signin").permitAll()
-                            .requestMatchers("/test/**").hasRole("USER")
-                            .anyRequest().authenticated();  // 이 밖에 모든 요청에 대해서 인증을 필요로 한다는 설정 - JWT 가 있어야 가능
-                    // JWT 인증을 위하여 직접 구현한 필터를 UsernamePasswordAuthenticationFilter 전에 실행
-                }).addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class).build();
+                            .requestMatchers("/**").permitAll();    // user + feign
+                })
+                .build();
     }
 
     @Bean

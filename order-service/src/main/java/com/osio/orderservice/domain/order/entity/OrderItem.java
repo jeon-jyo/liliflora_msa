@@ -26,6 +26,7 @@ public class OrderItem {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "product_id", nullable = false)
 //    private Product product;
+    private long productId;
 
     @Column(nullable = false)
     private int quantity;

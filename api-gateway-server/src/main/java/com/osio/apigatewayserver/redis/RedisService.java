@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public boolean hasKeyBlackList(String token) {
+    // 해당 키가 있는지 확인
+    public boolean hasKeyList(String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(token));
     }
 

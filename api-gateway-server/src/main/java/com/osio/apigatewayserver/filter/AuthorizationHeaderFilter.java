@@ -39,11 +39,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             String authorizationHeader = headers.get(HttpHeaders.AUTHORIZATION).get(0);
             String token = authorizationHeader.replace("Bearer ", "");
 
-//            if (!jwtTokenProvider.validateToken(token) || redisService.hasKeyBlackList(token)) {
-//                return onError(exchange, "Not Validate Token", HttpStatus.UNAUTHORIZED);
-//            }
+            log.info("token " + token);
 
-            if (!jwtTokenProvider.validateToken(token)) {
+            if (!jwtTokenProvider.validateToken(token) || !redisService.hasKeyList(token)) {
                 return onError(exchange, "Not Validate Token", HttpStatus.UNAUTHORIZED);
             }
 

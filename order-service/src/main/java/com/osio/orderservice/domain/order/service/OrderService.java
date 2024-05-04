@@ -1,5 +1,10 @@
 package com.osio.orderservice.domain.order.service;
 
+import com.osio.orderservice.domain.client.product.ProductClient;
+import com.osio.orderservice.domain.client.product.dto.ProductReqDto;
+import com.osio.orderservice.domain.client.product.dto.ProductResDto;
+import com.osio.orderservice.domain.client.user.UserClient;
+import com.osio.orderservice.domain.client.user.dto.UserResDto;
 import com.osio.orderservice.domain.order.dto.OrderItemRequestDto;
 import com.osio.orderservice.domain.order.dto.OrderItemResponseDto;
 import com.osio.orderservice.domain.order.dto.OrderRequestDto;
@@ -11,10 +16,11 @@ import com.osio.orderservice.domain.order.entity.OrderStatusEnum;
 import com.osio.orderservice.domain.order.repository.OrderItemRepository;
 import com.osio.orderservice.domain.order.repository.OrderRepository;
 import com.osio.orderservice.domain.order.repository.OrderStatusRepository;
+import com.osio.orderservice.domain.wishlist.entity.WishItem;
+import com.osio.orderservice.domain.wishlist.entity.Wishlist;
 import com.osio.orderservice.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +35,8 @@ public class OrderService {
 
 //    private final UserRepository userRepository;
 //    private final ProductRepository productRepository;
+    private final UserClient userClient;
+    private final ProductClient productClient;
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
     private final OrderItemRepository orderItemRepository;
@@ -43,11 +51,13 @@ public class OrderService {
         // 재고 확인
 //        Product product = productRepository.findById(orderProductDto.getProductId())
 //                .orElseThrow(() -> new NotFoundException("Product not found " + orderProductDto.getProductId()));
+        long orderProductId = orderProductDto.getProductId();
+        ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderProductId);
 
         int orderQuantity = orderProductDto.getQuantity();
-//        if (product.getQuantity() < orderQuantity) {
-//            throw new IllegalArgumentException("재고가 부족합니다.");
-//        }
+        if (product.getQuantity() < orderQuantity) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
 
         // 주문
 //        User user = userRepository.findById(userId)
@@ -56,35 +66,40 @@ public class OrderService {
         OrderStatus orderStatus = createOrderStatus();
 
         Order order = Order.builder()
-//                .user(user)
-//                .amount(product.getPrice() * orderQuantity)
+                .userId(userId)
+                .amount(product.getPrice() * orderQuantity)
                 .orderStatus(orderStatus)
                 .build();
 
         orderRepository.save(order);
 
         // 주문 상품
-//        Order currentOrder = orderRepository.findFirstByUserOrderByPurchaseDateDesc(user)
-//                .orElseThrow(() -> new NotFoundException("Order not found"));
+        Order currentOrder = orderRepository.findFirstByUserIdOrderByPurchaseDateDesc(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-//        product.decreaseQuantity(orderQuantity);    // 상품 재고 변경
+//        product.decreaseQuantity(orderQuantity);    // 상품 재고 감소
+        productClient.decreaseQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
 //        createOrderProduct(currentOrder, product, orderQuantity);
+        createOrderProduct(currentOrder, orderProductId, orderQuantity);
 
         // 주문서
 //        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+        UserResDto.MyPageDto myPageDto = userClient.myPage(userId);
 
-//        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(currentOrder);
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(currentOrder);
 //        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
 //                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
 //                .toList();
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+                .map(orderItem -> OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product))
+                .toList();
 
-//        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
-        return null;
+        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
     }
 
     // 주문 상태 추가
     @Transactional
-    public OrderStatus createOrderStatus() {
+    protected OrderStatus createOrderStatus() {
         OrderStatus orderStatus = OrderStatus.builder()
                 .status(OrderStatusEnum.ORDERED)
                 .build();
@@ -94,17 +109,17 @@ public class OrderService {
     }
 
     // 주문 상품 추가
-//    @Transactional
-//    private OrderItem createOrderProduct(Order currentOrder, Product product, int orderQuantity) {
-//        OrderItem orderItem = OrderItem.builder()
-//                .order(currentOrder)
-////                .product(product)
-//                .quantity(orderQuantity)
-//                .build();
-//
-//        orderItemRepository.save(orderItem);
-//        return orderItem;
-//    }
+    @Transactional
+    protected OrderItem createOrderProduct(Order currentOrder, long productId, int orderQuantity) {
+        OrderItem orderItem = OrderItem.builder()
+                .order(currentOrder)
+                .productId(productId)
+                .quantity(orderQuantity)
+                .build();
+
+        orderItemRepository.save(orderItem);
+        return orderItem;
+    }
 
     // 주문 유저 정보
 //    @Transactional
@@ -131,18 +146,33 @@ public class OrderService {
 //                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 //        List<Order> orders = orderRepository.findAllByUserOrderByPurchaseDateDesc(user);
+        List<Order> orders = orderRepository.findAllByUserIdOrderByPurchaseDateDesc(userId);
         List<OrderResponseDto.OrderListDto> orderListDtos = new ArrayList<>();
-//        for (Order currentOrder : orders) {
-//            List<OrderItem> orderItems = currentOrder.getOrderItems();
+        for (Order currentOrder : orders) {
+            List<OrderItem> orderItems = currentOrder.getOrderItems();
+            List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = new ArrayList<>();
+            for (OrderItem orderItem : orderItems) {
+                // 각 상품에 대한 세부 정보를 가져옵니다.
+                ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItem.getProductId());
+
+                // OrderItemCheckDto를 생성하여 리스트에 추가합니다.
+                OrderItemResponseDto.OrderItemCheckDto orderItemCheckDto =
+                        OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product);
+                orderItemCheckDtos.add(orderItemCheckDto);
+            }
+
 //            List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
 //                    .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
 //                    .toList();
-//
-//            OrderResponseDto.OrderListDto orderCheckDto =
-//                    OrderResponseDto.OrderListDto.fromEntity(currentOrder, orderItemCheckDtos);
-//
-//            orderListDtos.add(orderCheckDto);
-//        }
+//            List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+//                    .map(orderItem -> OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product))
+//                    .toList();
+
+            OrderResponseDto.OrderListDto orderCheckDto =
+                    OrderResponseDto.OrderListDto.fromEntity(currentOrder, orderItemCheckDtos);
+
+            orderListDtos.add(orderCheckDto);
+        }
         return orderListDtos;
     }
 
@@ -155,17 +185,31 @@ public class OrderService {
 //                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
 //        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+        UserResDto.MyPageDto myPageDto = userClient.myPage(userId);
 
         Order currentOrder = orderRepository.findById(orderDetailDto.getOrderId())
-                .orElseThrow(() -> new NotFoundException("Order not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         List<OrderItem> orderItems = currentOrder.getOrderItems();
-        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
-                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
-                .toList();
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = new ArrayList<>();
+        for (OrderItem orderItem : orderItems) {
+            // 각 상품에 대한 세부 정보를 가져옵니다.
+            ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItem.getProductId());
 
-//        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
-        return null;
+            // OrderItemCheckDto를 생성하여 리스트에 추가합니다.
+            OrderItemResponseDto.OrderItemCheckDto orderItemCheckDto =
+                    OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product);
+            orderItemCheckDtos.add(orderItemCheckDto);
+        }
+
+//        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+//                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
+//                .toList();
+//        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+//                .map(orderItem -> OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product))
+//                .toList();
+
+        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
     }
 
     // 장바구니 주문
@@ -182,14 +226,19 @@ public class OrderService {
 //
 //        List<WishItem> wishItems = wishlist.getWishItems();
 
-//        List<WishItem> currentWishItems = wishItems.stream()
-//                .filter(wishItem -> !wishItem.isDeleted()).toList();
+        Wishlist wishlist = wishlistRepository.findByUserId(userId)
+        .orElseThrow(() -> new IllegalArgumentException("Wishlist not found " + userId));
+
+        List<WishItem> wishItems = wishlist.getWishItems();
+
+        List<WishItem> currentWishItems = wishItems.stream()
+                .filter(wishItem -> !wishItem.isDeleted()).toList();
 
         // 주문
         OrderStatus orderStatus = createOrderStatus();
 
         Order order = Order.builder()
-//                .user(user)
+                .userId(userId)
                 .orderStatus(orderStatus)
                 .build();
 
@@ -198,37 +247,53 @@ public class OrderService {
         // 주문 상품
 //        Order currentOrder = orderRepository.findFirstByUserOrderByPurchaseDateDesc(user)
 //                .orElseThrow(() -> new NotFoundException("Order not found"));
+        Order currentOrder = orderRepository.findFirstByUserIdOrderByPurchaseDateDesc(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         List<OrderItem> orderItems = new ArrayList<>();
         int total = 0;
-//        for (WishItem wishItem : currentWishItems) {
-//            // 재고 확인
+        for (WishItem wishItem : currentWishItems) {
+            // 재고 확인
 //            Product product = productRepository.findById(wishItem.getProduct().getProductId())
 //                    .orElseThrow(() -> new NotFoundException("Product not found " + wishItem.getProduct().getProductId()));
-//
-//            int orderQuantity = wishItem.getQuantity();
-//            if (product.getQuantity() < orderQuantity) {
-//                throw new IllegalArgumentException("재고가 부족합니다.");
-//            }
-//
-//            product.decreaseQuantity(orderQuantity);    // 상품 재고 변경
-//            OrderItem orderItem = createOrderProduct(currentOrder, product, orderQuantity);
-//            orderItems.add(orderItem);
-//            total += (product.getPrice() * orderQuantity);
-//
-//            wishItem.updateDeleted();   // 장바구니에서 삭제
-//        }
-//        currentOrder.updateAmount(total);   // 총 금액 업데이트
+            long orderProductId = wishItem.getProductId();
+            ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderProductId);
+
+            int orderQuantity = wishItem.getQuantity();
+            if (product.getQuantity() < orderQuantity) {
+                throw new IllegalArgumentException("재고가 부족합니다.");
+            }
+
+//            product.decreaseQuantity(orderQuantity);    // 상품 재고 감소
+            productClient.decreaseQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
+            OrderItem orderItem = createOrderProduct(currentOrder, orderProductId, orderQuantity);
+            orderItems.add(orderItem);
+            total += (product.getPrice() * orderQuantity);
+
+            wishItem.updateDeleted();   // 장바구니에서 삭제
+        }
+        currentOrder.updateAmount(total);   // 총 금액 업데이트
 
         // 주문서
 //        UserResponseDto.MyPageDto myPageDto = orderUserDetail(user);
+        UserResDto.MyPageDto myPageDto = userClient.myPage(userId);
 
-        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
-                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
-                .toList();
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = new ArrayList<>();
+        for (OrderItem orderItem : orderItems) {
+            // 각 상품에 대한 세부 정보를 가져옵니다.
+            ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItem.getProductId());
 
-//        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
-        return null;
+            // OrderItemCheckDto를 생성하여 리스트에 추가합니다.
+            OrderItemResponseDto.OrderItemCheckDto orderItemCheckDto =
+                    OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product);
+            orderItemCheckDtos.add(orderItemCheckDto);
+        }
+
+//        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+//                .map(OrderItemResponseDto.OrderItemCheckDto::fromEntity)
+//                .toList();
+
+        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
     }
 
     // 주문 취소
@@ -237,7 +302,7 @@ public class OrderService {
         log.info("OrderService.cancelOrder()");
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         OrderStatus orderStatus = order.getOrderStatus();
         if (orderStatus.getStatus() != OrderStatusEnum.ORDERED) {
@@ -250,8 +315,10 @@ public class OrderService {
         for (OrderItem orderItem : orderItems) {
 //            Product product = productRepository.findById(orderItem.getProduct().getProductId())
 //                    .orElseThrow(() -> new NotFoundException("Product not found " + orderItem.getProduct().getProductId()));
+            ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItem.getProductId());
 
 //            product.increaseQuantity(orderItem.getQuantity());
+            productClient.increaseQuantity(new ProductReqDto.ProductQuantityDto(orderItem.getProductId(), orderItem.getQuantity()));
         }
     }
 
@@ -261,7 +328,7 @@ public class OrderService {
         log.info("OrderService.returnOrder()");
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         OrderStatus orderStatus = order.getOrderStatus();
         if (orderStatus.getStatus() != OrderStatusEnum.COMPLETED) {
@@ -306,6 +373,8 @@ public class OrderService {
 //                        .orElseThrow(() -> new NotFoundException("Product not found " + orderItem.getProduct().getProductId()));
 
 //                product.increaseQuantity(orderItem.getQuantity());
+                productClient.increaseQuantity(new ProductReqDto.ProductQuantityDto(orderItem.getProductId(), orderItem.getQuantity()));
+
             }
             order.getOrderStatus().updateReturned();
         }

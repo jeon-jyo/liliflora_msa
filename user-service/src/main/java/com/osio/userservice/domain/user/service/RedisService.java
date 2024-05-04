@@ -38,6 +38,13 @@ public class RedisService {
         values.set(key, data, duration);
     }
 
+    // 만료 시간을 설정하여 저장 - 토큰
+    public void setTokenValues(String key, String data) {
+        Duration duration = Duration.ofSeconds(86400000);
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        values.set(key, data, duration);
+    }
+
     // key 를 기반으로 데이터를 조회
     @Transactional(readOnly = true)
     public String getValues(String key) {

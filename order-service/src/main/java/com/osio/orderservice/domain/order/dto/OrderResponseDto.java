@@ -1,5 +1,6 @@
 package com.osio.orderservice.domain.order.dto;
 
+import com.osio.orderservice.domain.client.user.dto.UserResDto;
 import com.osio.orderservice.domain.order.entity.Order;
 //import com.osio.userservice.domain.user.dto.UserResponseDto;
 import lombok.Builder;
@@ -27,24 +28,25 @@ public class OrderResponseDto {
 
         private String orderStatus;
 
-//        private UserResponseDto.MyPageDto user;
+        //        private UserResponseDto.MyPageDto user;
+        private UserResDto.MyPageDto user;
 
         private List<OrderItemResponseDto.OrderItemCheckDto> orderItems;
 
-//        public static OrderCheckDto fromEntity(Order order, UserResponseDto.MyPageDto user, List<OrderItemResponseDto.OrderItemCheckDto> orderItems) {
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-//
-//            return OrderCheckDto.builder()
-//                    .orderId(order.getOrderId())
-//                    .amount(order.getAmount())
-//                    .purchaseDate(order.getPurchaseDate().format(formatter))
-//                    .changedDate(order.getChangedDate().format(formatter))
-//                    .orderStatusId(order.getOrderStatus().getOrderStatusId())
-//                    .orderStatus(order.getOrderStatus().getStatus().getStatus())
-//                    .user(user)
-//                    .orderItems(orderItems)
-//                    .build();
-//        }
+        public static OrderCheckDto fromEntity(Order order, UserResDto.MyPageDto user, List<OrderItemResponseDto.OrderItemCheckDto> orderItems) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+            return OrderCheckDto.builder()
+                    .orderId(order.getOrderId())
+                    .amount(order.getAmount())
+                    .purchaseDate(order.getPurchaseDate().format(formatter))
+                    .changedDate(order.getChangedDate().format(formatter))
+                    .orderStatusId(order.getOrderStatus().getOrderStatusId())
+                    .orderStatus(order.getOrderStatus().getStatus().getStatus())
+                    .user(user)
+                    .orderItems(orderItems)
+                    .build();
+        }
     }
 
     @Setter

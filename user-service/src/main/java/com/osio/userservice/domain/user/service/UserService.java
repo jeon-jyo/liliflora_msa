@@ -37,6 +37,7 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final EncryptUtil encryptUtil;
+    private final RedisService redisService;
 
     // 이메일 중복확인
     @Transactional
@@ -119,9 +120,15 @@ public class UserService {
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         JwtToken jwtToken = jwtTokenProvider.generateToken(authentication);
 
+        // ----- 프론트단 없이 로그아웃 구현 위해 추가 -----
+        
+        // redis 에 토큰 저장
+        redisService.setTokenValues(jwtToken.getAccessToken(), email + "jwtToken");
+
         return jwtToken;
     }
 
+    // 마이페이지 - 내 정보 조회
     @Transactional
     public UserResponseDto.MyPageDto myPage(Long userId) {
         log.info("UserService.myPage()");
