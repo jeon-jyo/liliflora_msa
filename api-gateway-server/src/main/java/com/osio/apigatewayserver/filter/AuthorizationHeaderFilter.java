@@ -41,13 +41,14 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
             log.info("token " + token);
 
-            if (!jwtTokenProvider.validateToken(token) || !redisService.hasKeyList(token)) {
+            if (!jwtTokenProvider.validateToken(token) || redisService.hasKeyList(token)) {
                 return onError(exchange, "Not Validate Token", HttpStatus.UNAUTHORIZED);
             }
 
             String subject = jwtTokenProvider.getSubject(token);
             ServerHttpRequest newRequest = request.mutate()
                     .header("userId", subject)
+                    .header("Authorization", token)
                     .build();
 
             return chain.filter(exchange.mutate().request(newRequest).build());

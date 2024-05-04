@@ -115,9 +115,20 @@ public class UserService {
         // ----- 프론트단 없이 로그아웃 구현 위해 추가 -----
         
         // redis 에 토큰 저장
-        redisService.setTokenValues(jwtToken.getAccessToken(), email + "jwtToken");
+        // redisService.setTokenValues(jwtToken.getAccessToken(), email + " jwtToken");
 
         return jwtToken;
+    }
+
+    // 로그아웃
+    public void logout(String token, String userId) {
+        log.info("UserService.logout()");
+
+        // redis 에 토큰 삭제
+        // redisService.deleteValues(token);
+        
+        // redis 에 토큰 저장 - 블랙리스트
+        redisService.setTokenValues(token, userId + " jwtToken");
     }
 
     // 마이페이지 - 내 정보 조회

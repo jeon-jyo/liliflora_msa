@@ -16,4 +16,9 @@ public class RedisService {
     public boolean hasKeyList(String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(token));
     }
+
+    // 해당 키가 있는지 확인 - 블랙리스트
+    public boolean hasKeyBlacklist(String token) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(token));
+    }
 }

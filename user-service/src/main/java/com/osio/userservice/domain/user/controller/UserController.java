@@ -67,6 +67,15 @@ public class UserController {
         return jwtToken;    // Access Token 발급
     }
 
+    // 로그아웃
+    @PostMapping("/logout")
+    public boolean logout(@RequestHeader(value = "Authorization") String token, @RequestHeader(value = "userId") String userId) {
+        log.info("UserController.logout()");
+
+        userService.logout(token, userId);
+        return true;
+    }
+
     /*
     Spring Security 의 인증된 사용자(principal - UserDetails 객체) 정보는 Authentication 객체를 통해 접근됨
     Authentication 객체에서 principal 을 추출하여 해당 필드에 직접 액세스할 수 있음
