@@ -8,7 +8,7 @@ import lombok.Setter;
 public class ProductResponseDto {
 
     @Getter
-    @Setter
+//    @Setter
     @Builder
     public static class ProductDetailDto {
 

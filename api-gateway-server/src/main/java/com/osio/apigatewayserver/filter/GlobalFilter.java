@@ -4,14 +4,10 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Component
 @Slf4j
@@ -20,10 +16,6 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
     public GlobalFilter() {
         super(Config.class);
     }
-
-//    private static final List<String> excludeUris = List.of(
-//            "/api/user/signup", "/api/user/signin"
-//    );
 
     @Data
     public static class Config {
@@ -50,14 +42,6 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
                 log.info("Global Filter Start : request id -> {}", request.getId());
             }
 
-            // 인증을 거치지 않을 ExcludeURL 에 포함되는지 판단
-//            String path = request.getURI().getPath();
-//            for (String excludeUri : excludeUris) {
-//                if (excludeUri.equals(path)) {
-//                    return chain.filter(exchange);
-//                }
-//            }
-
             // Custom Post Filter
             return chain.filter(exchange).then(Mono.fromRunnable(() -> {
                 if (config.isPostLogger()) {
@@ -67,9 +51,4 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
         };
     }
 
-//    private Mono<Void> failAuthenticationResponse(ServerWebExchange exchange) {
-//        final ServerHttpResponse response = exchange.getResponse();
-//        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-//        return exchange.getResponse().setComplete();
-//    }
 }

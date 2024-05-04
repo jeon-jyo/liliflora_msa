@@ -1,7 +1,5 @@
 package com.osio.orderservice.domain.wishlist.entity;
 
-//import com.osio.userservice.domain.user.entity.User;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,9 +22,6 @@ public class Wishlist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long wishlistId;
 
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private User user;
     private Long userId;
 
     @OneToMany(mappedBy = "wishlist", fetch = FetchType.LAZY)

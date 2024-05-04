@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface WishItemRepository extends JpaRepository<WishItem, Long> {
-//    Optional<WishItem> findWishItemByWishlistAndProductAndDeletedFalse(Wishlist wishlist, Product product);
     Optional<WishItem> findWishItemByWishlistAndProductIdAndDeletedFalse(Wishlist wishlist, long productId);
 }

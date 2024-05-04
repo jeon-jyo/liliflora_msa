@@ -6,8 +6,6 @@ import com.osio.userservice.domain.user.dto.UserResponseDto;
 import com.osio.userservice.domain.user.entity.User;
 import com.osio.userservice.domain.user.entity.UserRoleEnum;
 import com.osio.userservice.domain.user.repository.UserRepository;
-//import com.osio.userservice.domain.wishlist.entity.Wishlist;
-//import com.osio.userservice.domain.wishlist.repository.WishlistRepository;
 import com.osio.userservice.global.jwt.JwtToken;
 import com.osio.userservice.global.jwt.JwtTokenProvider;
 import com.osio.userservice.global.util.EncryptUtil;
@@ -31,7 +29,6 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-//    private final WishlistRepository wishlistRepository;
     private final WishlistClient wishlistClient;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -76,11 +73,6 @@ public class UserService {
         try {
             userRepository.save(user);
 
-            // Wishlist 생성 및 연결
-//            Wishlist wishlist = Wishlist.builder()
-//                    .user(user)
-//                    .build();
-//            wishlistRepository.save(wishlist);
             wishlistClient.createWishlist(user.getUserId());
             return "Success";
         } catch (DataIntegrityViolationException e) {   // 중복된 이메일 주소로 회원가입 시도한 경우 예외 처리
@@ -156,9 +148,6 @@ public class UserService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        // 비밀번호 해싱
-        // String hashedPassword = passwordEncoder.encode(changePhoneDto.getPassword());
 
         // 제공된 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교
         if (!passwordEncoder.matches(changePasswordDto.getPassword(), user.getPassword())) {

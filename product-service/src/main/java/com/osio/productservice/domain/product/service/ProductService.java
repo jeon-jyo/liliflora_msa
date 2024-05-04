@@ -22,6 +22,8 @@ public class ProductService {
     // 상품 목록
     @Transactional
     public List<com.osio.productservice.domain.product.dto.ProductResponseDto.ProductDetailDto> productList() {
+        log.info("ProductService.productList()");
+
         return productRepository.findAllByOrderByProductIdDesc().stream()
                 .map(com.osio.productservice.domain.product.dto.ProductResponseDto.ProductDetailDto::fromEntity)
                 .toList();
@@ -30,6 +32,8 @@ public class ProductService {
     // 상품 상세
     @Transactional
     public com.osio.productservice.domain.product.dto.ProductResponseDto.ProductDetailDto productDetail(Long productId) {
+        log.info("ProductService.productDetail()");
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
@@ -41,6 +45,8 @@ public class ProductService {
     // 상품 정보
     @Transactional
     public ProductResDto.ProductDetailDto getProductDetail(long productId) {
+        log.info("ProductService.getProductDetail()");
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
@@ -50,6 +56,8 @@ public class ProductService {
     // 상품 재고 감소
     @Transactional
     public void decreaseQuantity(ProductReqDto.ProductQuantityDto productQuantityDto) {
+        log.info("ProductService.decreaseQuantity()");
+
         Product product = productRepository.findById(productQuantityDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
@@ -62,6 +70,8 @@ public class ProductService {
     // 상품 재고 복구
     @Transactional
     public void increaseQuantity(ProductReqDto.ProductQuantityDto productQuantityDto) {
+        log.info("ProductService.increaseQuantity()");
+
         Product product = productRepository.findById(productQuantityDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 

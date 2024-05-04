@@ -8,7 +8,7 @@ import lombok.Setter;
 public class WishItemResponseDto {
 
     @Getter
-    @Setter
+//    @Setter
     @Builder
     public static class WishItemCheckDto {
         private long wishItemId;
@@ -23,7 +23,6 @@ public class WishItemResponseDto {
             return WishItemCheckDto.builder()
                     .wishItemId(wishItem.getWishItemId())
                     .wishlistId(wishItem.getWishlist().getWishlistId())
-//                    .productId(wishItem.getProduct().getProductId())
                     .productId(wishItem.getProductId())
                     .quantity(wishItem.getQuantity())
                     .build();

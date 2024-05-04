@@ -1,7 +1,5 @@
 package com.osio.orderservice.domain.wishlist.entity;
 
-//import com.osio.userservice.domain.product.entity.Product;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,9 +23,6 @@ public class WishItem {
     @JoinColumn(name = "wishlist_id", nullable = false)
     private Wishlist wishlist;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "product_id", nullable = false)
-//    private Product product;
     private Long productId;
 
     @Column(nullable = false)

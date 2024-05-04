@@ -19,18 +19,6 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // key 와 data 를 Redis 에 저장
-    public void setValues(String key, String data) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        values.set(key, data);
-    }
-
-    // 만료 시간을 설정하여 저장
-    public void setValues(String key, String data, Duration duration) {
-        ValueOperations<String, Object> values = redisTemplate.opsForValue();
-        values.set(key, data, duration);
-    }
-
     // 만료 시간을 설정하여 저장 - 인증 번호
     public void setAuthValues(String key, String data) {
         Duration duration = Duration.ofSeconds(120);
@@ -60,6 +48,23 @@ public class RedisService {
         redisTemplate.delete(key);
     }
 
+    // 조회하려는 데이터가 없으면 “false”를 반환
+    public boolean checkExistsValue(String value) {
+        return !value.equals("false");
+    }
+
+    //
+
+    public void setValues(String key, String data) {
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        values.set(key, data);
+    }
+
+    public void setValues(String key, String data, Duration duration) {
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        values.set(key, data, duration);
+    }
+
     public void expireValues(String key, int timeout) {
         redisTemplate.expire(key, timeout, TimeUnit.MILLISECONDS);
     }
@@ -78,10 +83,5 @@ public class RedisService {
     public void deleteHashOps(String key, String hashKey) {
         HashOperations<String, Object, Object> values = redisTemplate.opsForHash();
         values.delete(key, hashKey);
-    }
-
-    // 조회하려는 데이터가 없으면 “false”를 반환
-    public boolean checkExistsValue(String value) {
-        return !value.equals("false");
     }
 }

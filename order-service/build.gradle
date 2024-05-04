@@ -32,9 +32,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'	// 테스트시 사용되는 의존성
 
     // jwt 토큰을 구현할때  필요한 의존성들
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+//    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     implementation 'org.slf4j:slf4j-api'	// slf4j 관련 패키지 의존성
     implementation 'ch.qos.logback:logback-classic'	// 디버깅시에 로그를 찍어보는 의존성 (선택)
@@ -46,10 +46,10 @@ dependencies {
 //    implementation 'org.springframework.security:spring-security-taglibs'
 
     // 이메일 인증 - JavaMailApi 를 직접 사용하기 위한 의존성
-    implementation 'javax.mail:mail:1.4.7'
+//    implementation 'javax.mail:mail:1.4.7'
     // Spring Context Support
-    implementation 'org.springframework:spring-context-support:5.3.9'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.6.3'
+//    implementation 'org.springframework:spring-context-support:5.3.9'
+//    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.6.3'
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -60,7 +60,6 @@ dependencies {
 
     // feign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
-
 }
 
 dependencyManagement {

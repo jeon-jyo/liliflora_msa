@@ -22,14 +22,6 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);    // 지정된 키 바이트 배열을 기반으로 새 SecretKey 인스턴스를 만듦
     }
 
-//    // User 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
-//    public JwtToken generateToken(Authentication authentication) {
-//    }
-
-//    // Jwt 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 메서드
-//    public Authentication getAuthentication(String accessToken) {
-//    }
-
     // 토큰 정보를 검증하는 메서드 (유효성을 확인)
     public boolean validateToken(String token) {
         try {

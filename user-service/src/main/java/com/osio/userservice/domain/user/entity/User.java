@@ -1,6 +1,5 @@
 package com.osio.userservice.domain.user.entity;
 
-//import com.osio.userservice.domain.wishlist.entity.Wishlist;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,8 +54,6 @@ public class User {
     @Column(nullable = false)
     private char status;
 
-//    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-//    private Wishlist wishlist;
     private Long wishlistId;
 
     // Entity 가 DB에 Insert 되기 전에 호출됨

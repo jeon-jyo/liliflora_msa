@@ -8,7 +8,6 @@ import com.osio.orderservice.domain.wishlist.repository.WishItemRepository;
 import com.osio.orderservice.domain.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +19,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class WishlistService {
 
-//    private final UserRepository userRepository;
-//    private final ProductRepository productRepository;
     private final WishlistRepository wishlistRepository;
     private final WishItemRepository wishItemRepository;
 
@@ -30,17 +27,8 @@ public class WishlistService {
     public WishItemResponseDto.WishItemCheckDto addWishlist(WishItemRequestDto.AddWishItemDto addWishlistDto, Long userId) {
         log.info("WishlistService.addWishlist()");
 
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        Wishlist wishlist = wishlistRepository.findByUser(user)
-//                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
-
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist not found " + userId));
-
-//        Product product = productRepository.findById(addWishlistDto.getProductId())
-//                .orElseThrow(() -> new NotFoundException("Product not found " + addWishlistDto.getProductId()));
 
         WishItem wishItem = confirmWishItem(addWishlistDto, wishlist, addWishlistDto.getProductId());
         return WishItemResponseDto.WishItemCheckDto.fromEntity(wishItem);
@@ -71,12 +59,6 @@ public class WishlistService {
     @Transactional
     public List<WishItemResponseDto.WishItemCheckDto> myWishlist(Long userId) {
         log.info("WishlistService.myWishlist()");
-
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//
-//        Wishlist wishlist = wishlistRepository.findByUser(user)
-//                .orElseThrow(() -> new NotFoundException("Wishlist not found " + userId));
 
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Wishlist not found " + userId));
@@ -124,10 +106,10 @@ public class WishlistService {
         log.info("WishlistService.createWishlist()");
 
         // Wishlist 생성 및 연결
-            Wishlist wishlist = Wishlist.builder()
-                    .userId(userId)
-                    .build();
-            wishlistRepository.save(wishlist);
+        Wishlist wishlist = Wishlist.builder()
+                .userId(userId)
+                .build();
+        wishlistRepository.save(wishlist);
     }
 
 }

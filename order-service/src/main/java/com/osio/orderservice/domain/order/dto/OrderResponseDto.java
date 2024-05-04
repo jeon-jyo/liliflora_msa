@@ -2,7 +2,6 @@ package com.osio.orderservice.domain.order.dto;
 
 import com.osio.orderservice.domain.client.user.dto.UserResDto;
 import com.osio.orderservice.domain.order.entity.Order;
-//import com.osio.userservice.domain.user.dto.UserResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +11,7 @@ import java.util.List;
 
 public class OrderResponseDto {
 
-    @Setter
+//    @Setter
     @Getter
     @Builder
     public static class OrderCheckDto {
@@ -28,7 +27,6 @@ public class OrderResponseDto {
 
         private String orderStatus;
 
-        //        private UserResponseDto.MyPageDto user;
         private UserResDto.MyPageDto user;
 
         private List<OrderItemResponseDto.OrderItemCheckDto> orderItems;
@@ -49,7 +47,7 @@ public class OrderResponseDto {
         }
     }
 
-    @Setter
+//    @Setter
     @Getter
     @Builder
     public static class OrderListDto {

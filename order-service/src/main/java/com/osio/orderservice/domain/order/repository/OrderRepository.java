@@ -11,10 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-//    Optional<Order> findFirstByUserOrderByPurchaseDateDesc(User user);
     Optional<Order> findFirstByUserIdOrderByPurchaseDateDesc(Long userId);
 
-//    List<Order> findAllByUserOrderByPurchaseDateDesc(User user);
     List<Order> findAllByUserIdOrderByPurchaseDateDesc(Long userId);
 
     List<Order> findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum status, LocalDateTime localDateTime);

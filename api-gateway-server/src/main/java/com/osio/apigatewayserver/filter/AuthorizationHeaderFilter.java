@@ -46,7 +46,6 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             }
 
             String subject = jwtTokenProvider.getSubject(token);
-
             ServerHttpRequest newRequest = request.mutate()
                     .header("userId", subject)
                     .build();
