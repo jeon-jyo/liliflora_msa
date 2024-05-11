@@ -4,6 +4,8 @@ import com.osio.productservice.domain.client.order.dto.ProductResDto;
 import com.osio.productservice.domain.client.order.dto.ProductReqDto;
 import com.osio.productservice.domain.product.entity.Product;
 import com.osio.productservice.domain.product.repository.ProductRepository;
+import com.osio.productservice.domain.stock.entity.Stock;
+import com.osio.productservice.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final StockRepository stockRepository;
 
     // 상품 목록
     @Transactional
@@ -37,7 +40,14 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        return com.osio.productservice.domain.product.dto.ProductResponseDto.ProductDetailDto.fromEntity(product);
+        Stock stock = stockRepository.findById(productId)
+                .orElseGet(() -> {
+                    // 없으면 새로운 Stock 객체 생성
+                    Stock newStock = new Stock(product.getProductId(), product.getQuantity());
+                    return stockRepository.save(newStock); // 새로운 재고 redis 저장하고 반환
+                });
+
+        return com.osio.productservice.domain.product.dto.ProductResponseDto.ProductDetailDto.fromEntityAndQuantity(product, stock.getQuantity());
     }
 
     // feign

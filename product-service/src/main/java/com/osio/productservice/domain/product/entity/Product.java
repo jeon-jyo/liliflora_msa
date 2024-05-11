@@ -42,4 +42,8 @@ public class Product {
     public void increaseQuantity(int quantity) {
         this.quantity += quantity;
     }
+
+    public void syncQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

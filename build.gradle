@@ -11,6 +11,9 @@ subprojects {
 
 	dependencies {
 		// 공통적으로 사용하는 의존성 정의
+
+		// docker compose auto start
+//	testAndDevelopmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	}
 
 	group = 'com.osio'

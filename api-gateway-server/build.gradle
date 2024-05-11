@@ -20,6 +20,8 @@ ext {
 }
 
 dependencies {
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'	// 테스트시 사용되는 의존성
+
     // eureka
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
