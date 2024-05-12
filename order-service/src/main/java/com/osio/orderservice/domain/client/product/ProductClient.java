@@ -22,4 +22,12 @@ public interface ProductClient {
     // 상품 재고 복구
     @PostMapping("/api/internal/product/increase")
     void increaseQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto);
+
+    // redis 재고 감소
+    @PostMapping("/api/internal/stock/decrease")
+    boolean decreaseStockQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto) throws Exception;
+
+    // redis 재고 복구
+    @PostMapping("/api/internal/stock/increase")
+    void increaseStockQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto);
 }

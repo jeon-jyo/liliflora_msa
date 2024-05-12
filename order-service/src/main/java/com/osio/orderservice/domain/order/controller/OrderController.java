@@ -18,13 +18,31 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // 상품 주문
+    // 상품 주문 진입
     @PostMapping("/product")
-    public OrderResponseDto.OrderCheckDto orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
-                                                       @RequestHeader(value = "userId") String userId) {
+    public long orderProduct(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
+                             @RequestHeader(value = "userId") String userId) throws Exception {
         log.info("OrderController.orderProduct()");
 
         return orderService.orderProduct(orderProductDto, Long.valueOf(userId));
+    }
+
+    // 결제
+    @PostMapping("/payment/{orderId}")
+    public OrderResponseDto.OrderCheckDto orderPayment(@PathVariable("orderId") Long orderId,
+                                                       @RequestHeader(value = "userId") String userId) {
+        log.info("OrderController.orderPayment()");
+
+        return orderService.orderPayment(orderId, Long.valueOf(userId));
+    }
+
+    // 일반 상품 주문
+    @PostMapping("/productOrigin")
+    public OrderResponseDto.OrderCheckDto orderProductOrigin(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
+                                                             @RequestHeader(value = "userId") String userId) {
+        log.info("OrderController.orderProductOrigin()");
+
+        return orderService.orderProductOrigin(orderProductDto, Long.valueOf(userId));
     }
 
     // 주문 전체 조회

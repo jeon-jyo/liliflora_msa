@@ -1,6 +1,6 @@
 package com.osio.userservice.domain.user.service;
 
-import com.osio.userservice.domain.client.wishlist.WishlistClient;
+import com.osio.userservice.domain.client.order.OrderClient;
 import com.osio.userservice.domain.user.dto.UserRequestDto;
 import com.osio.userservice.domain.user.dto.UserResponseDto;
 import com.osio.userservice.domain.user.entity.User;
@@ -29,7 +29,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final WishlistClient wishlistClient;
+    private final OrderClient wishlistClient;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;

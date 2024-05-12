@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -40,10 +41,125 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final WishlistRepository wishlistRepository;
 
-    // 상품 주문
+    // 상품 주문 진입
     @Transactional
-    public OrderResponseDto.OrderCheckDto orderProduct(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) {
+    public long orderProduct(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) throws Exception {
         log.info("OrderService.orderProduct()");
+
+        long orderProductId = orderProductDto.getProductId();
+        int orderQuantity = orderProductDto.getQuantity();
+
+        // 재고 확인 및 검사
+        boolean check = productClient.decreaseStockQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
+
+        if (!check) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
+
+        // 주문
+        ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderProductId);
+
+        OrderStatus orderStatus = createOrderStatus();
+
+        Order order = Order.builder()
+                .userId(userId)
+                .amount(product.getPrice() * orderQuantity)
+                .orderStatus(orderStatus)
+                .build();
+
+        orderRepository.save(order);
+
+        // 주문 상품
+        createOrderProduct(order, orderProductId, orderQuantity);
+
+        // 20% 고객 이탈
+        if (isTwentyPercent()) {
+            leaveOrder(order.getOrderId());
+        }
+
+        return order.getOrderId();
+    }
+
+    // 20% 계산
+    @Transactional
+    public boolean isTwentyPercent() {
+        Random random = new Random();
+
+        // 0에서 99 사이의 랜덤한 정수 생성
+        int randomNumber = random.nextInt(100);
+
+        // 20% 확률로 true 반환
+        return randomNumber < 20;
+    }
+
+    // 이탈
+    @Transactional
+    public void leaveOrder(Long userId) {
+        Order order = orderRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        stockRestore(order);
+    }
+
+    // 타임아웃 확인
+    @Transactional
+    public void checkFailedOrder() {
+        // ORDERED("주문생성") 이후 10분이 넘은 주문들 -> FAILED("주문실패")
+        List<Order> orderedOrders =
+                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.ORDERED, LocalDateTime.now().minusMinutes(10));
+
+        for (Order order : orderedOrders) {
+            stockRestore(order);
+        }
+    }
+
+    // redis 재고 복구
+    @Transactional
+    public void stockRestore(Order order) {
+        order.getOrderStatus().updateFailed();
+
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(order);
+        for (OrderItem orderItem : orderItems) {
+            long productId = orderItem.getProductId();
+            int quantity = orderItem.getQuantity();
+
+            productClient.increaseStockQuantity(new ProductReqDto.ProductQuantityDto(productId, quantity));
+        }
+    }
+
+    // 결제
+    @Transactional
+    public OrderResponseDto.OrderCheckDto orderPayment(Long orderId, Long userId) {
+        log.info("OrderService.orderPayment()");
+
+        // 20% 고객 이탈
+        if (isTwentyPercent()) {
+            leaveOrder(orderId);
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        order.getOrderStatus().updatePayment();
+
+        // 주문서
+        UserResDto.MyPageDto myPageDto = userClient.myPage(userId);;
+
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(order);
+
+        ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItems.get(0).getProductId());
+
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
+                .map(orderItem -> OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product))
+                .toList();
+
+        return OrderResponseDto.OrderCheckDto.fromEntity(order, myPageDto, orderItemCheckDtos);
+    }
+
+    // 일반 상품 주문
+    @Transactional
+    public OrderResponseDto.OrderCheckDto orderProductOrigin(OrderItemRequestDto.OrderProductDto orderProductDto, Long userId) {
+        log.info("OrderService.orderProductOrigin()");
 
         // 재고 확인
         long orderProductId = orderProductDto.getProductId();
@@ -71,7 +187,7 @@ public class OrderService {
 
         // 상품 재고 감소
         productClient.decreaseQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
-        
+
         createOrderProduct(currentOrder, orderProductId, orderQuantity);
 
         // 주문서
