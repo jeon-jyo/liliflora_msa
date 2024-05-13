@@ -27,6 +27,15 @@ public class OrderController {
         return orderService.orderProduct(orderProductDto, Long.valueOf(userId));
     }
 
+    // 상품 주문 진입 - 테스트
+    @PostMapping("/product/pro")
+    public long orderProductPro(@RequestBody OrderItemRequestDto.OrderProductDto orderProductDto,
+                                @RequestHeader(value = "userId") String userId) throws Exception {
+        log.info("OrderController.orderProductPro()");
+
+        return orderService.orderProduct(orderProductDto, Long.valueOf(userId));
+    }
+
     // 결제
     @PostMapping("/payment/{orderId}")
     public OrderResponseDto.OrderCheckDto orderPayment(@PathVariable("orderId") Long orderId,

@@ -51,9 +51,6 @@ public class User {
     @Column(name = "changed_date")
     private LocalDateTime changedDate;
 
-    @Column(nullable = false)
-    private char status;
-
     private Long wishlistId;
 
     // Entity 가 DB에 Insert 되기 전에 호출됨

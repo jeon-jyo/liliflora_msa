@@ -60,6 +60,10 @@ dependencies {
 
     // feign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.0'
+
+    // redission
+    implementation 'org.redisson:redisson:3.29.0'
+//    implementation 'org.redisson:redisson-spring-boot-starter:3.16.3'
 }
 
 dependencyManagement {

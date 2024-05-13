@@ -22,10 +22,17 @@ spring:
             postLogger: true
       routes:
         - id: order-service
-#          uri: lb://order-service
           uri: http://localhost:8082/
           predicates:
-#            - Path=/api/order/**
+            - Path=/order-service/order/product/pro
+            - Method=POST
+          filters:
+            - RewritePath=/order-service/(?<segment>.*), /$\{segment}
+        - id: order-service
+          #          uri: lb://order-service
+          uri: http://localhost:8082/
+          predicates:
+            #            - Path=/api/order/**
             - Path=/order-service/**
           filters:
             - RewritePath=/order-service/(?<segment>.*), /$\{segment}

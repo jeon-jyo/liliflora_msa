@@ -2,6 +2,7 @@ package com.osio.orderservice.domain.client.product;
 
 import com.osio.orderservice.domain.client.product.dto.ProductReqDto;
 import com.osio.orderservice.domain.client.product.dto.ProductResDto;
+import com.osio.orderservice.domain.client.product.dto.StockReqDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +26,9 @@ public interface ProductClient {
 
     // redis 재고 감소
     @PostMapping("/api/internal/stock/decrease")
-    boolean decreaseStockQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto) throws Exception;
+    boolean decreaseStockQuantity(@RequestBody StockReqDto.StockQuantityDto stockQuantityDto) throws Exception;
 
     // redis 재고 복구
     @PostMapping("/api/internal/stock/increase")
-    void increaseStockQuantity(@RequestBody ProductReqDto.ProductQuantityDto productQuantityDto);
+    void increaseStockQuantity(@RequestBody StockReqDto.StockQuantityDto stockQuantityDto);
 }

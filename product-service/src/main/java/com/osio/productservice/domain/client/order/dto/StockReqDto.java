@@ -3,14 +3,16 @@ package com.osio.productservice.domain.client.order.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-public class ProductReqDto {
+public class StockReqDto {
 
     @Getter
     @Builder
-    public static class ProductQuantityDto {
+    public static class StockQuantityDto {
         private long productId;
 
         private int quantity;
+
+        private long orderId;
     }
 
 }

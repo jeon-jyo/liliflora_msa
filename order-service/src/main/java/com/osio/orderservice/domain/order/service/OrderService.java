@@ -3,6 +3,7 @@ package com.osio.orderservice.domain.order.service;
 import com.osio.orderservice.domain.client.product.ProductClient;
 import com.osio.orderservice.domain.client.product.dto.ProductReqDto;
 import com.osio.orderservice.domain.client.product.dto.ProductResDto;
+import com.osio.orderservice.domain.client.product.dto.StockReqDto;
 import com.osio.orderservice.domain.client.user.UserClient;
 import com.osio.orderservice.domain.client.user.dto.UserResDto;
 import com.osio.orderservice.domain.order.dto.OrderItemRequestDto;
@@ -49,13 +50,6 @@ public class OrderService {
         long orderProductId = orderProductDto.getProductId();
         int orderQuantity = orderProductDto.getQuantity();
 
-        // 재고 확인 및 검사
-        boolean check = productClient.decreaseStockQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
-
-        if (!check) {
-            throw new IllegalArgumentException("재고가 부족합니다.");
-        }
-
         // 주문
         ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderProductId);
 
@@ -71,6 +65,14 @@ public class OrderService {
 
         // 주문 상품
         createOrderProduct(order, orderProductId, orderQuantity);
+
+        // 재고 확인 및 검사
+        boolean check = productClient.decreaseStockQuantity(new StockReqDto.StockQuantityDto(orderProductId, orderQuantity, order.getOrderId()));
+
+        if (!check) {
+            order.getOrderStatus().updateFailed();
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
 
         // 20% 고객 이탈
         if (isTwentyPercent()) {
@@ -123,7 +125,7 @@ public class OrderService {
             long productId = orderItem.getProductId();
             int quantity = orderItem.getQuantity();
 
-            productClient.increaseStockQuantity(new ProductReqDto.ProductQuantityDto(productId, quantity));
+            productClient.increaseStockQuantity(new StockReqDto.StockQuantityDto(productId, quantity, order.getOrderId()));
         }
     }
 
@@ -140,6 +142,10 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
+        // FAILED 되지 않은 주문만 결제진행
+        if (order.getOrderStatus().getStatus() != OrderStatusEnum.ORDERED) {
+            throw new IllegalArgumentException("Order not found");
+        }
         order.getOrderStatus().updatePayment();
 
         // 주문서
