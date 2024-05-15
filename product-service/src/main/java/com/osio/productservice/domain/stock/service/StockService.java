@@ -45,7 +45,8 @@ public class StockService {
         try {
             boolean available = rLock.tryLock(waitTime, leaseTime, timeUnit);
             if(!available){
-                throw new IllegalArgumentException("Lock acquired");
+                return false;
+//                throw new IllegalArgumentException("Lock acquired");
             }
             //=== 락 획득 후 로직 수행 ===
             // redis 재고 확인
@@ -68,14 +69,16 @@ public class StockService {
             // === 로직 수행 완료 ===
         }catch (InterruptedException e){
             //락을 얻으려고 시도하다가 인터럽트를 받았을 때 발생하는 예외
-            throw new IllegalArgumentException("Lock acquired");
+            return false;
+//            throw new IllegalArgumentException("Lock acquired");
         }finally{
             try{
                 rLock.unlock();
                 log.info("unlock complete: {}", rLock.getName());
             }catch (IllegalMonitorStateException e){
                 //이미 종료된 락일 때 발생하는 예외
-                throw new IllegalArgumentException("Lock acquired");
+                return false;
+//                throw new IllegalArgumentException("Lock acquired");
             }
         }
     }
