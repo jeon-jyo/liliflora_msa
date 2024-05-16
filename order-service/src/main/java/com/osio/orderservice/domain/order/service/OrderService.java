@@ -146,7 +146,7 @@ public class OrderService {
         if (order.getOrderStatus().getStatus() != OrderStatusEnum.ORDERED) {
             throw new IllegalArgumentException("Order not found");
         }
-        order.getOrderStatus().updatePayment();
+        order.getOrderStatus().updatePayment(); // 결제 완료
 
         // 주문서
         UserResDto.MyPageDto myPageDto = userClient.myPage(userId);;
@@ -188,24 +188,26 @@ public class OrderService {
         orderRepository.save(order);
 
         // 주문 상품
-        Order currentOrder = orderRepository.findFirstByUserIdOrderByPurchaseDateDesc(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+//        Order currentOrder = orderRepository.findFirstByUserIdOrderByPurchaseDateDesc(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         // 상품 재고 감소
         productClient.decreaseQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
 
         createOrderProduct(currentOrder, orderProductId, orderQuantity);
 
+        order.getOrderStatus().updatePayment(); // 결제 완료
+
         // 주문서
         UserResDto.MyPageDto myPageDto = userClient.myPage(userId);
 
-        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(currentOrder);
+        List<OrderItem> orderItems = orderItemRepository.findAllByOrder(order);
 
         List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = orderItems.stream()
                 .map(orderItem -> OrderItemResponseDto.OrderItemCheckDto.fromEntityAndDto(orderItem, product))
                 .toList();
 
-        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
+        return OrderResponseDto.OrderCheckDto.fromEntity(order, myPageDto, orderItemCheckDtos);
     }
 
     // 주문 상태 추가
@@ -310,8 +312,8 @@ public class OrderService {
         orderRepository.save(order);
 
         // 주문 상품
-        Order currentOrder = orderRepository.findFirstByUserIdOrderByPurchaseDateDesc(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+//        Order currentOrder = orderRepository.findFirstByUserIdOrderByPurchaseDateDesc(userId)
+//                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         List<OrderItem> orderItems = new ArrayList<>();
         int total = 0;
@@ -328,20 +330,22 @@ public class OrderService {
             // 상품 재고 감소
             productClient.decreaseQuantity(new ProductReqDto.ProductQuantityDto(orderProductId, orderQuantity));
 
-            OrderItem orderItem = createOrderProduct(currentOrder, orderProductId, orderQuantity);
+            order.getOrderStatus().updatePayment(); // 결제 완료
+
+            OrderItem orderItem = createOrderProduct(order, orderProductId, orderQuantity);
             orderItems.add(orderItem);
             total += (product.getPrice() * orderQuantity);
 
             wishItem.updateDeleted();   // 장바구니에서 삭제
         }
-        currentOrder.updateAmount(total);   // 총 금액 업데이트
+        order.updateAmount(total);   // 총 금액 업데이트
 
         // 주문서
         UserResDto.MyPageDto myPageDto = userClient.myPage(userId);
 
-        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = createOrderItemCheckDtos(currentOrder);
+        List<OrderItemResponseDto.OrderItemCheckDto> orderItemCheckDtos = createOrderItemCheckDtos(order);
 
-        return OrderResponseDto.OrderCheckDto.fromEntity(currentOrder, myPageDto, orderItemCheckDtos);
+        return OrderResponseDto.OrderCheckDto.fromEntity(order, myPageDto, orderItemCheckDtos);
     }
 
     // 주문 취소
@@ -354,7 +358,7 @@ public class OrderService {
 
         OrderStatus orderStatus = order.getOrderStatus();
 
-        if (orderStatus.getStatus() != OrderStatusEnum.ORDERED) {
+        if (orderStatus.getStatus() != OrderStatusEnum.PAYMENT) {
             throw new Exception("cannot cancel order");
         }
         orderStatus.cancelOrder();  // 주문 취소
@@ -362,7 +366,7 @@ public class OrderService {
         // 상품 재고 복구
         List<OrderItem> orderItems = order.getOrderItems();
         for (OrderItem orderItem : orderItems) {
-            ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItem.getProductId());
+//            ProductResDto.ProductDetailDto product = productClient.getProductDetail(orderItem.getProductId());
 
             productClient.increaseQuantity(new ProductReqDto.ProductQuantityDto(orderItem.getProductId(), orderItem.getQuantity()));
         }
@@ -390,9 +394,9 @@ public class OrderService {
     // 주문 상태 변경 - 자정마다 실행
     @Transactional
     public void updateOrderStatus() {
-        // ORDERED("결제완료") 이후 1일이 넘은 주문들 -> SHIPPING("배송중")
+        // PAYMENT("결제완료") 이후 1일이 넘은 주문들 -> SHIPPING("배송중")
         List<Order> orderedOrders =
-                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.ORDERED, LocalDateTime.now().minusDays(1));
+                orderRepository.findAllByOrderStatus_StatusAndChangedDateBefore(OrderStatusEnum.PAYMENT, LocalDateTime.now().minusDays(1));
 
         for (Order order : orderedOrders) {
             order.getOrderStatus().updateShipping();
